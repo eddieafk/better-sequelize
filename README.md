@@ -20,9 +20,9 @@ Database.initialize({
 class User extends BaseModel {
     static fields = {
         username: Fields.StringField({ unique: true }),
-        email: Fields.EmailField()
-        password: Fields.StringField()
-        isActive: Fields.Boolean({ defaultValue: true })
+        email: Fields.EmailField(),
+        password: Fields.StringField(),
+        isActive: Fields.Boolean({ defaultValue: true }),
     }
 }
 User.init(User.fields, {
