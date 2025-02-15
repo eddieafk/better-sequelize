@@ -1,0 +1,40 @@
+{
+  "name": "better-sequelize",
+  "version": "0.0.1",
+  "description": "Better sequelize",
+  "main": "src/main.js",
+  "exports": {
+    ".": {
+      "import": "./src/main.js",
+      "require": "./src/main.js"
+    },
+    "./config": {
+      "import": "./src/db/config.js",
+      "require": "./src/db/config.js"
+    },
+    "./fields": {
+      "import": "./src/db/fields.js",
+      "require": "./src/db/fields.js"
+    }
+  },
+  "scripts": {
+    "test": "src/main.js"
+  },
+  "keywords": [
+    "Sqlite"
+  ],
+  "author": "edwardballadeer",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "sequelize": "^6.37.5",
+    "mysql2": "^3.0.0",
+    "pg": "^8.0.0",
+    "pg-hstore": "^2.3.0"
+  },
+  "peerDependencies": {
+    "mysql2": "^3.0.0",
+    "pg": "^8.0.0",
+    "pg-hstore": "^2.3.0"
+  }
+}
