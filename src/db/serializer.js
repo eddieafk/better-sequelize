@@ -1,11 +1,18 @@
 class Serializer {
-    constructor(model, fields) {
-        this.model = model;
-        this.fields = fields;
+    constructor(modelClass) {
+        this.modelClass = modelClass;
+        // Get fields automatically
+        this.fields = Object.keys(modelClass.fields || {});
+        // Add ID field automatically
+        if (!this.fields.includes('id')) {
+            this.fields.unshift('id');
+        }
     }
 
-    // 📌 Modeli JSON formatına çevirme
+    // Form Model to JSON.
     serialize(instance) {
+        if (!instance) return null;
+        
         let data = {};
         this.fields.forEach(field => {
             if (instance[field] !== undefined) {
@@ -15,38 +22,73 @@ class Serializer {
         return data;
     }
 
-    // 📌 Gelen veriyi doğrulama ve deserialization
+    // Serialize more than one instance.
+    serializeMany(instances) {
+        return instances.map(instance => this.serialize(instance));
+    }
+
+    // Deserialization
     async deserialize(data) {
         let validatedData = {};
+        const modelFields = this.modelClass.fields || {};
 
-        for (const field of this.fields) {
-            if (data[field] === undefined) {
-                throw new Error(`${field} alanı gereklidir.`);
+        for (const [fieldName, fieldDef] of Object.entries(modelFields)) {
+            if (!fieldDef.allowNull && data[fieldName] === undefined) {
+                throw new Error(`${fieldName} field is required.`);
             }
-            validatedData[field] = data[field];
+            if (data[fieldName] !== undefined) {
+                validatedData[fieldName] = data[fieldName];
+            }
         }
 
         return validatedData;
     }
 
-    // 📌 Yeni bir kullanıcı oluştur
+    // Register a register
     async create(data) {
+        await this.modelClass._initializeModel();
         const validatedData = await this.deserialize(data);
-        return await this.model.create(validatedData);
+        const instance = await this.modelClass.create(validatedData);
+        return this.serialize(instance);
     }
 
-    async destroy(id) {
-        if (!id) {
-            throw new Error('ID alanı gereklidir.');
-        }
-        
-        const instance = await this.model.findByPk(id);
+    // Updating a register
+    async update(id, data) {
+        await this.modelClass._initializeModel();
+        const instance = await this.modelClass.findByPk(id);
         if (!instance) {
-            throw new Error('Kayıt bulunamadı.');
+            throw new Error('Record not found');
+        }
+
+        const validatedData = await this.deserialize({...instance.toJSON(), ...data});
+        await instance.update(validatedData);
+        return this.serialize(instance);
+    }
+
+    // Unregistering
+    async destroy(id) {
+        await this.modelClass._initializeModel();
+        const instance = await this.modelClass.findByPk(id);
+        if (!instance) {
+            throw new Error('Record not found');
         }
 
         await instance.destroy();
         return true;
+    }
+
+    // Get only one -the chosen- register.
+    async retrieve(id) {
+        await this.modelClass._initializeModel();
+        const instance = await this.modelClass.findByPk(id);
+        return this.serialize(instance);
+    }
+
+    // Get all of the registers
+    async list(options = {}) {
+        await this.modelClass._initializeModel();
+        const instances = await this.modelClass.findAll(options);
+        return this.serializeMany(instances);
     }
 }
 

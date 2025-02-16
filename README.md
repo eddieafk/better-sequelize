@@ -10,33 +10,35 @@ npm install better-sequelize
 
 # Quick Start
 ```js
-import { BaseModel, Database, Fields, Serializer } from 'better-sequelize';
+import { BaseModel, Fields, Database, Serializer } from 'better-sequelize'
 
-Database.initialize({
-    dialect: 'sqlite',
-    storage: './db.sqlite'
-})
+async function main() {
+    await Database.initialize({
+        dialect: "sqlite",
+        storage: "./db.sqlite"
+    });
 
-class User extends BaseModel {
-    static fields = {
-        username: Fields.StringField({ unique: true }),
-        email: Fields.EmailField()
-        password: Fields.StringField()
-        isActive: Fields.Boolean({ defaultValue: true })
+    class User extends BaseModel {
+        static fields = {
+            username: Fields.StringField({ allowNull: false }),
+            email: Fields.EmailField(),
+            isActive: Fields.Boolean({ defaultValue: true })
+        }
     }
-}
-User.init(User.fields, {
-    sequelize: Database.getSequelize(),
-    tableName: 'users'
-})
-await User.syncModel();
 
-class UserSerializer extends Serializer {
-    constructor() {
-        super(User, ['username', 'email', 'password']);
-    }
-}
-const userSerializer = new UserSerializer()
-userSerializer.create({ username: "MyNameIsEddie", email: "example@example.com", "password": "HiThere" })
+    // Create serializer
+    const userSerializer = new Serializer(User);
 
+try {
+const user = await userSerializer.create({
+    username: "testasas",
+    email: "test@tesasast.com"
+});
+    console.log("User created:", user);
+} catch (error) {
+    console.error("Error:", error);
+ }
+}
+
+main().catch(console.error);
 ```

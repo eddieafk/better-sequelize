@@ -67,7 +67,7 @@ class Fields {
             throw new Error(`Invalid onUpdate value: '${onUpdate}'. Use one of: ${validActions.join(', ')}`);
         }
 
-        // Foreign Key alanını oluştur
+        // Foreign Key 
         const fieldDefinition = {
             type: validTypes[type],
             allowNull,
@@ -79,7 +79,7 @@ class Fields {
             onUpdate
         };
 
-        // Eğer hedef model tanımlanmışsa otomatik olarak belongsTo ilişkisini ekle
+        // Automatic belongsTo
         if (targetModel) {
             targetModel.belongsTo(model, { foreignKey: key });
         }

@@ -67,25 +67,59 @@ let sequelize = null;
     }
 
 
-// Django Model yapısına benzer bir BaseModel sınıfı
+// BaseModel
 class BaseModel extends Model {
-    static init(attributes, options = {}) {
-        const sequelize = Database.getSequelize();
-        
-        if (!options.sequelize) {
-            options.sequelize = sequelize;
-        }
+    static _initialized = false;
+    static _initPromise = null;
 
-        const defineAttributes = {
-            id: Fields.IntegerField({ autoIncrement: true, primaryKey: true }),
-            ...attributes 
-        };
+    static async _initializeModel() {
+        if (this._initialized) return;
+        if (this._initPromise) return this._initPromise;
 
-        return super.init(defineAttributes, options);
+        this._initPromise = (async () => {
+            try {
+                const sequelize = Database.getSequelize();
+                await sequelize.authenticate();
+
+                if (this.fields) {
+                    const tableName = this.name.toLowerCase() + 's';
+
+                    const defineAttributes = {
+                        id: Fields.IntegerField({ autoIncrement: true, primaryKey: true }),
+                        ...this.fields
+                    };
+
+                    super.init(defineAttributes, {
+                        sequelize,
+                        tableName,
+                        modelName: this.name
+                    });
+
+                    await this.sync({ alter: true });
+                    this._initialized = true;
+                    console.log(`Model ${this.name} initialized and synced successfully`);
+                }
+            } catch (error) {
+                console.error(`Error initializing model ${this.name}:`, error);
+                throw error;
+            }
+        })();
+
+        return this._initPromise;
     }
 
-    static async syncModel() {
-        await this.sync({ alter: true });
+    static async create(values, options) {
+        await this._initializeModel();
+        return super.create(values, options);
+    }
+
+    static {
+        const originalExtends = Object.getPrototypeOf(this);
+        if (originalExtends !== Model) {
+            this._initializeModel().catch(error => {
+                console.error(`Failed to initialize model ${this.name}:`, error);
+            });
+        }
     }
 }
 

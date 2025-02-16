@@ -1,6 +1,6 @@
 {
   "name": "better-sequelize",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Better sequelize",
   "main": "src/main.js",
   "exports": {
@@ -15,6 +15,10 @@
     "./fields": {
       "import": "./src/db/fields.js",
       "require": "./src/db/fields.js"
+    },
+    "./serializer": {
+      "import": "./src/db/serializer.js",
+      "require": "./src/db/serializer.js"
     }
   },
   "scripts": {
@@ -27,10 +31,11 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "sequelize": "^6.37.5",
     "mysql2": "^3.0.0",
     "pg": "^8.0.0",
-    "pg-hstore": "^2.3.0"
+    "pg-hstore": "^2.3.0",
+    "sequelize": "^6.37.5",
+    "sqlite3": "^5.1.7"
   },
   "peerDependencies": {
     "mysql2": "^3.0.0",
